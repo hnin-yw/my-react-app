@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllUsers, deleteGroup } from '../../api';
+import { getAllUsers, deleteUser } from '../../api';
 import { Link } from 'react-router-dom';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
@@ -34,8 +34,11 @@ const UserList = () => {
         try {
             const confirmed = window.confirm('このユーザを削除してもよろしいですか?');
             if (confirmed) {
-                deleteGroup(id).then(res => {
-                    window.location.reload();
+                deleteUser(id).then(res => {
+                    window.alert(res.message);
+                    if (res.statusCode === 200) {
+                        window.location.reload();
+                    }
                 })
             }
 
@@ -53,7 +56,7 @@ const UserList = () => {
                     <h2 className="text-center">ユーザ一覧</h2>
                     <div className="col-sm-12">
                         <div className="up-btn-gp">
-                            <Link to="/schedule/users/create" className='btn btn-primary'>ユーザ登録</Link>
+                            <Link to="/schedule/users/create" className='btn btn-primary'>ユーザを登録</Link>
                         </div>
                         <table className="table table-bordered" style={{ marginTop: '10px' }}>
                             <thead className="tbl-header-ft">

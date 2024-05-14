@@ -3,7 +3,6 @@ const groupService = require('../services/groupService');
 class GroupController {
   static async getAllGroups(req, res) {
     try {
-      console.log("GroupController",req);
       const groups = await groupService.getAllGroups();
       res.json(groups);
     } catch (error) {
@@ -35,7 +34,7 @@ class GroupController {
     try {
       const gpData = req.body;
       const dbGpId = await groupService.saveGroup(gpData);
-      res.status(201).json({ id: dbGpId, message: 'Group created successfully' });
+      res.status(200).json({ statusCode: 200, message: 'グループは正常に登録されました。' });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -45,7 +44,7 @@ class GroupController {
     try {
       const gpData = req.body;
       await groupService.updateGroup(gpData);
-      res.status(200).json({ id: req.body.id, message: 'Group updated successfully' });
+      res.status(200).json({ statusCode: 200, message: 'グループは正常に更新されました。' });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -53,14 +52,18 @@ class GroupController {
 
   static async deleteGroup(req, res) {
     try {
-      const gpId = req.params.id;
-      await groupService.deleteGroup(gpId);
-      res.status(200).json({ id: gpId, message: 'Group deleted successfully' });
+      const gpId = req.params.id;;
+      const isDel = await groupService.deleteGroup(gpId);
+      if (isDel) {
+        res.status(200).json({ statusCode: 200, message: 'グループは正常に削除されました。' });
+      } else {
+        res.status(201).json({ statusCode: 201, message: 'このグループは削除できません。' });
+
+      }
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
   }
-
 }
 
 module.exports = GroupController;

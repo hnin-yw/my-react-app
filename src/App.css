@@ -275,3 +275,17 @@ label {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
+.error {
+  color: red !important;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pf_link{
+  font-size: 14px !important;
+}
+
+.tbl-header-ft{
+  font-weight: bold;
+}

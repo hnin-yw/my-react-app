@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getUserById } from '../../api';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { saveGroup } from '../../api';
+import { updateUser } from '../../api';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 
@@ -41,7 +41,7 @@ const UserEdit = () => {
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
-      saveGroup(values).then(res => {
+      updateUser(values).then(res => {
         navigate('/schedule/users');
       })
     } catch (error) {
@@ -168,7 +168,7 @@ const UserEdit = () => {
                 </div>
                 <div className="up-btn-gp col-sm-12">
                   <Link to="/schedule/users"><button type="button" className='btn btn-light'>キャンセル</button></Link>
-                  <button type="submit" className="btn btn-primary">登録</button>
+                  <button type="submit" className="btn btn-primary">編集</button>
                 </div>
               </form>
             </div>

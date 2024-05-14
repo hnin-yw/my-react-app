@@ -1,4 +1,5 @@
 const group = require('../models/Group');
+const user = require('../models/User');
 
 class GroupService {
   static async getAllGroups() {
@@ -65,16 +66,20 @@ class GroupService {
 
   static async deleteGroup(gpId) {
     try {
-      const gpData = {
-        id: gpId,
-        del_flg: true,
-        updated_by: "U000001",
-        updated_at: new Date()
-      };
-
-      group.deleteGroup(gpData);
-
-      return gpId;
+      const dbGroupData = await this.getGroupById(gpId);
+      const userData = await user.getUserByGroupCode(dbGroupData[0].group_code);
+      if (userData.length > 0) {
+        return false;
+      } else {
+        const gpData = {
+          id: gpId,
+          del_flg: true,
+          updated_by: "U000001",
+          updated_at: new Date()
+        };
+        group.deleteGroup(gpData);
+        return true;
+      }
     } catch (error) {
       throw error;
     }
@@ -102,8 +107,6 @@ class GroupService {
       throw error;
     }
   }
-
-
 }
 
 module.exports = GroupService;

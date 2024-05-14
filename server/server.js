@@ -1,16 +1,15 @@
-// server.js
 const express = require('express');
-const cors = require('cors'); // Import the cors package
+const cookieParser = require('cookie-parser'); // Correct import for cookie-parser middleware
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
+app.use(cookieParser()); // Use cookie-parser middleware before defining routes
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-//to resolve not allowed by Access-Control-Allow-Origin
-app.use(cors()); // Use the cors middleware
+app.use(cors()); // Use cors middleware to handle CORS issues
 
 // Routes
 const userRoutes = require('./routes/userRoute');

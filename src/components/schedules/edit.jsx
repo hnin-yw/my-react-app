@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getGroupById, updateGroup } from '../../api';
 
-const GroupEdit = () => {
+const ScheduleEdit = () => {
   const { id } = useParams();
   const [values, setValues] = useState({
     id: '',
@@ -29,7 +29,7 @@ const GroupEdit = () => {
     try {
       event.preventDefault();
       updateGroup(values).then(res => {
-        navigate('/groups');
+        navigate('/schedule/groups');
       })
     } catch (error) {
       console.error('Error saving data:', error);
@@ -54,11 +54,11 @@ const GroupEdit = () => {
             />
           </div>
           <button type="submit">更新</button>
-          <Link to="/groups" className='btn btn-Light'><button type="button">キャンセル</button></Link>
+          <Link to="/schedule/groups" className='btn btn-Light'><button type="button">キャンセル</button></Link>
         </form>
       </div>
     </div>
   );
 };
 
-export default GroupEdit;
+export default ScheduleEdit;

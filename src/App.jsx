@@ -12,6 +12,9 @@ import UserEdit from './components/users/edit';
 
 import ScheduleList from './components/schedules/list';
 import ScheduleCreate from './components/schedules/create';
+import ScheduleEdit from './components/schedules/edit';
+
+import AttendeeList from './components/schedules/attendee_list';
 
 import LoginForm from './components/login';
 
@@ -35,6 +38,8 @@ function App() {
         {/* Schedules */}
         <Route path="/schedule/schedules" element={<ScheduleList />} />
         <Route path="/schedule/schedules/create" element={<ScheduleCreate />} />
+        <Route path="/schedule/schedules/edit/:id" element={<ScheduleEdit />} />
+        <Route path="/schedule/schedules/attendee_list/:id" element={<AttendeeList />} />
       </Routes>
     </BrowserRouter>
   );

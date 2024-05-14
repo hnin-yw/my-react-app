@@ -6,6 +6,7 @@ import Sidebar from '../Sidebar';
 
 const GroupEdit = () => {
   const { id } = useParams();
+  const [errors, setErrors] = useState({});
   const [values, setValues] = useState({
     id: '',
     group_name: ''
@@ -28,11 +29,19 @@ const GroupEdit = () => {
   }, [id]);
 
   const handleUpdateSubmit = async (event) => {
+    event.preventDefault();
     try {
-      event.preventDefault();
-      updateGroup(values).then(res => {
-        navigate('/groups');
-      })
+      const errors = {};
+      if (!values.group_name.trim()) {
+        errors.group_name = 'グループ名は必須です。';
+      }
+      setErrors(errors);
+
+      if (Object.keys(errors).length === 0) {
+        updateGroup(values).then(res => {
+          navigate('/schedule/groups');
+        })
+      }
     } catch (error) {
       console.error('Error saving data:', error);
     }
@@ -58,6 +67,7 @@ const GroupEdit = () => {
                     onChange={(e) => setValues({ ...values, group_name: e.target.value })}
                     placeholder="グループ名"
                   />
+                  {errors.group_name && <span className="error">{errors.group_name}</span>}
                 </div>
                 <div className="up-btn-gp col-sm-12">
                   <Link to="/schedule/groups"><button type="button" className='btn btn-light'>キャンセル</button></Link>
