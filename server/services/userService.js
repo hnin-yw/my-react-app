@@ -1,8 +1,8 @@
 const crypto = require('crypto');
-const cookies = require('js-cookie');
 
 const User = require('../models/User');
 const Schedule = require('../models/Schedule');
+const Attendee = require('../models/Attendee');
 
 class UserService {
   static async login(req) {
@@ -49,15 +49,15 @@ class UserService {
     });
   }
 
-  static async saveUser(userData) {
+  static async saveUser(userData, userCode) {
     try {
       const user_code = await this.getUserCode();
       userData.user_code = user_code;
       userData.password = this.pwdEncodeSHA(userData.password);
       userData.del_flg = false;
-      userData.created_by = "U000001";
+      userData.created_by = userCode;
       userData.created_at = new Date();
-      userData.updated_by = "U000001";
+      userData.updated_by = userCode;
       userData.updated_at = new Date();
       const userId = await new Promise((resolve, reject) => {
         User.saveUser(userData, (err, userId) => {
@@ -74,9 +74,9 @@ class UserService {
     }
   }
 
-  static async updateUser(userData) {
+  static async updateUser(userData, userCode) {
     try {
-      userData.updated_by = "U000001";
+      userData.updated_by = userCode;
       userData.updated_at = new Date();
       User.updateUser(userData);
 
@@ -86,17 +86,22 @@ class UserService {
     }
   }
 
-  static async deleteUser(userId) {
+  static async deleteUser(userId, userCode) {
     try {
       const dbUserData = await this.getUserById(userId);
       const scheduleData = await Schedule.getScheduleByUserCode(dbUserData[0].user_code);
-      if (scheduleData.length > 0) {
+      const attendeeData = await Attendee.getAttendeeByUserCode(dbUserData[0].user_code);
+      if (
+        scheduleData.length > 0
+        || attendeeData.length > 0
+        || dbUserData[0].user_code === userCode
+      ) {
         return false;
       } else {
         const userData = {
           id: userId,
           del_flg: true,
-          updated_by: "U000001",
+          updated_by: userCode,
           updated_at: new Date()
         };
         User.deleteUser(userData);

@@ -1,6 +1,6 @@
 const db = require('../db');
 
-const selectAllQuery = "SELECT u.*, g.group_name FROM users u JOIN user_groups g ON u.group_code = g.group_code WHERE u.del_flg = 0";
+const selectAllQuery = "SELECT u.*, g.group_name FROM users u JOIN user_groups g ON u.group_code = g.group_code WHERE u.del_flg = 0 ORDER BY u.user_code DESC";
 const selectByIdQuery = "SELECT u.*, g.group_name FROM users u JOIN user_groups g ON u.group_code = g.group_code WHERE u.del_flg = 0 AND u.id = ?";
 const loginQuery = "SELECT * FROM users WHERE user_name= ? AND password = ?";
 const selectUserByGroupCodeQuery = "SELECT * FROM users WHERE del_flg = 0 AND group_code = ?";
@@ -62,16 +62,18 @@ class User {
   }
 
   static saveUser(req, callback) {
-    const values = [req.group_code, req.user_code,
-    req.user_name,
-    req.password,
-    req.user_first_name,
-    req.user_last_name,
-    req.post_code,
-    req.address,
-    req.tel_number,
-    req.email,
-    req.del_flg, req.created_by, req.created_at, req.updated_by, req.updated_at];
+    const values = [
+      req.group_code,
+      req.user_code,
+      req.user_name,
+      req.password,
+      req.user_first_name,
+      req.user_last_name,
+      req.post_code,
+      req.address,
+      req.tel_number,
+      req.email,
+      req.del_flg, req.created_by, req.created_at, req.updated_by, req.updated_at];
     db.query(ins_query, values, (err, result) => {
       if (err) {
         return callback(err);

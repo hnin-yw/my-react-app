@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 import PaginationComponent from '../PaginationComponent';
+import cookies from 'js-cookie';
 
 const UserList = () => {
+    const userCode = cookies.get('userCode');
     const [users, setUsers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15;
@@ -62,9 +64,11 @@ const UserList = () => {
                             <thead className="tbl-header-ft">
                                 <tr>
                                     <th>ユーザ名</th>
-                                    <th>メール</th>
+                                    <th>ユーザの名</th>
+                                    <th>ユーザの姓</th>
                                     <th>グループ名</th>
-                                    <th></th>
+                                    <th>メール</th>
+                                    <th>アクション</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -72,13 +76,37 @@ const UserList = () => {
                                     currentItems.map((user, index) => (
                                         <tr key={index}>
                                             <td>{user.user_name}</td>
-                                            <td>{user.email}</td>
+                                            <td>{user.user_first_name}</td>
+                                            <td>{user.user_last_name}</td>
                                             <td>{user.group_name}</td>
+                                            <td>{user.email}</td>
                                             <td style={{ width: '20%' }}>
-                                                <Link to={`/schedule/users/edit/${user.id}`} className='btn btn-primary'>
-                                                    編集
-                                                </Link>
-                                                <button type='button' onClick={() => handleDelete(user.id)} className='mx-2 btn btn-danger'>削除</button>
+                                                {user.user_code !== userCode ? (
+                                                    <Link
+                                                        to={`/schedule/users/edit/${user.id}`}
+                                                        className='btn btn-primary'
+                                                    >
+                                                        編集
+                                                    </Link>
+                                                ) : (
+                                                    <button
+                                                        type='button'
+                                                        className='btn btn-primary'
+                                                        disabled={user.user_code === userCode}
+                                                    >
+                                                        編集
+                                                    </button>
+                                                )}
+                                                <button
+                                                    type='button'
+                                                    onClick={() => user.user_code !== userCode && handleDelete(user.id)}
+                                                    className='mx-2 btn btn-danger'
+                                                    disabled={user.user_code === userCode}
+                                                >
+                                                    削除
+                                                </button>
+
+
                                             </td>
                                         </tr>
                                     ))

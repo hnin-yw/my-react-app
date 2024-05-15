@@ -26,14 +26,14 @@ class GroupService {
     });
   }
 
-  static async saveGroup(gpData) {
+  static async saveGroup(gpData, userCode) {
     try {
       const group_code = await this.getGroupCode();
       gpData.group_code = group_code;
       gpData.del_flg = false;
-      gpData.created_by = "U000001";
+      gpData.created_by = userCode;
       gpData.created_at = new Date();
-      gpData.updated_by = "U000001";
+      gpData.updated_by = userCode;
       gpData.updated_at = new Date();
 
       const userId = await new Promise((resolve, reject) => {
@@ -51,9 +51,9 @@ class GroupService {
     }
   }
 
-  static async updateGroup(gpData) {
+  static async updateGroup(gpData, userCode) {
     try {
-      gpData.updated_by = "U000001";
+      gpData.updated_by = userCode;
       gpData.updated_at = new Date();
 
       group.updateGroup(gpData);
@@ -64,7 +64,7 @@ class GroupService {
     }
   }
 
-  static async deleteGroup(gpId) {
+  static async deleteGroup(gpId, userCode) {
     try {
       const dbGroupData = await this.getGroupById(gpId);
       const userData = await user.getUserByGroupCode(dbGroupData[0].group_code);
@@ -74,7 +74,7 @@ class GroupService {
         const gpData = {
           id: gpId,
           del_flg: true,
-          updated_by: "U000001",
+          updated_by: userCode,
           updated_at: new Date()
         };
         group.deleteGroup(gpData);

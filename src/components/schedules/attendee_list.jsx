@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { getAllAttendeesBySchedule } from '../../api';
-import { Link } from 'react-router-dom';
+import { Link, useParams  } from 'react-router-dom';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 
 function AttendeeList() {
+    const { id } = useParams();
     const [attendees, setAttendees] = useState([]);
 
     useEffect(() => {
         async function fetchAttendees() {
             try {
-                const data = await getAllAttendeesBySchedule();
+                const data = await getAllAttendeesBySchedule(id);
+                console.log(data);
                 setAttendees(data);
             } catch (error) {
                 console.error('Error fetching Attendees:', error);
             }
         }
         fetchAttendees();
-    }, []);
+    }, [id]);
 
     return (
         <div className="container-fluid">
@@ -36,7 +38,7 @@ function AttendeeList() {
                         )}
                     </div>
                     <div className="up-btn-gp col-sm-12">
-                        <Link to="/schedule/groups"><button type="button" className='btn btn-light'>キャンセル</button></Link>
+                        <Link to="/schedule/schedules"><button type="button" className='btn btn-light'>戻る</button></Link>
                     </div>
                 </div>
             </div>

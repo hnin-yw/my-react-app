@@ -1,15 +1,18 @@
 const express = require('express');
-const cookieParser = require('cookie-parser'); // Correct import for cookie-parser middleware
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cookieParser()); // Use cookie-parser middleware before defining routes
+app.use(cors({
+  origin: 'http://localhost:3000', // Replace with your client URL
+  credentials: true // Enable credentials (cookies)
+}));
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors()); // Use cors middleware to handle CORS issues
 
 // Routes
 const userRoutes = require('./routes/userRoute');

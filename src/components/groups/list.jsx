@@ -61,7 +61,7 @@ function GroupList() {
                             <thead className="tbl-header-ft">
                                 <tr>
                                     <th><b>グループ名</b></th>
-                                    <th></th>
+                                    <th>アクション</th>
                                 </tr>
                             </thead>
                             <tbody className="tbl-body-ft">
