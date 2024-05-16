@@ -13,6 +13,16 @@ class ScheduleReminderService {
     });
   }
 
+  static async saveScheduleReminder(reminderData) {
+    try {
+      scheduleReminder.saveScheduleReminder(reminderData, (err, reminderId) => {
+        return reminderId;
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async deleteScheduleReminders(req) {
     try {
       scheduleReminder.deleteScheduleReminders(req);

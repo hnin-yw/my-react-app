@@ -1,0 +1,10 @@
+{
+    "editor.minimap.sectionHeaderFontSize": 25,
+    "editor.fontSize": 25,
+    "editor.codeLensFontSize": 25,
+    "editor.inlayHints.fontSize": 25,
+    "editor.suggestFontSize": 25,
+    "debug.console.fontSize": 25,
+    "scm.inputFontSize": 25,
+    "terminal.integrated.fontSize": 25
+}

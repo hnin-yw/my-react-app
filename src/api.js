@@ -42,6 +42,18 @@ export const downloadSchedule = async (scheduleIds) => {
     }
 };
 
+export const saveSchedule = async (scheduleData) => {
+    try {
+        const saveResponse = await axios.post(`${API_BASE_URL}/schedules`, scheduleData, {
+            withCredentials: true
+        });
+        return saveResponse.data;
+    } catch (error) {
+        console.error('Error saving schedule:', error);
+        throw new Error('Failed to save schedule. Please try again later.');
+    }
+};
+
 export const deleteScheduleOne = async (deleteValue) => {
     try {
         const response = await axios.put(`${API_BASE_URL}/schedules/deleteOne/${deleteValue}`, null, {

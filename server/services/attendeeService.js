@@ -14,6 +14,16 @@ class AttendeeService {
     });
   }
 
+  static async saveAttendee(attendeeData) {
+    try {
+      attendee.saveAttendee(attendeeData, (err, attendeeId) => {
+        return attendeeId;
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async deleteAttendees(req) {
     try {
       attendee.deleteAttendees(req);

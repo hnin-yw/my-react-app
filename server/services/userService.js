@@ -124,10 +124,10 @@ class UserService {
         });
       });
 
-      let user_code = null;
+      let user_code = "U000001";;
       if (userData != null && userData.length > 0) {
         const nextNumber = parseInt(userData[0].user_code.substring(1)) + 1;
-        user_code = "G" + nextNumber.toString().padStart(6, '0');
+        user_code = "U" + nextNumber.toString().padStart(6, '0');
       }
       return user_code;
     } catch (error) {

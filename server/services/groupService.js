@@ -97,7 +97,7 @@ class GroupService {
         });
       });
 
-      let group_code = null;
+      let group_code = "G000001";
       if (gpData != null && gpData.length > 0) {
         const nextNumber = parseInt(gpData[0].group_code.substring(1)) + 1;
         group_code = "G" + nextNumber.toString().padStart(6, '0');

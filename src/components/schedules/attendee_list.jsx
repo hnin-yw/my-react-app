@@ -12,7 +12,6 @@ function AttendeeList() {
         async function fetchAttendees() {
             try {
                 const data = await getAllAttendeesBySchedule(id);
-                console.log(data);
                 setAttendees(data);
             } catch (error) {
                 console.error('Error fetching Attendees:', error);

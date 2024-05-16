@@ -29,6 +29,18 @@ class ScheduleController {
     }
   }
 
+  static async saveSchedule(req, res) {
+    try {
+      const userCode = req.cookies.userCode;
+      const groupCode = req.cookies.groupCode;
+      const scheduleData = req.body;
+      const dbScheduleId = await scheduleService.saveSchedule(scheduleData, userCode,groupCode);
+      res.status(200).json({ statusCode: 200, message: 'スケジュールは正常に登録されました。' });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
   static async deleteScheduleOne(req, res) {
     try {
       const userCode = req.cookies.userCode;
