@@ -1,9 +1,10 @@
 const db = require('../db');
 
-const selectByScheduleIdQuery = "SELECT * FROM attendees WHERE del_flg = 0 AND schedule_id = ?";
+const selectByScheduleIdQuery = "SELECT a.user_code,u.email FROM attendees a JOIN users u ON a.user_code = u.user_code WHERE a.del_flg = 0 AND a.schedule_id = ?";
 const selectAttendeeByUserCodeQuery = "SELECT * FROM attendees WHERE del_flg = 0 AND user_code = ?";
 const del_upd_query = "UPDATE attendees SET del_flg = ?, updated_by = ?, updated_at = ? WHERE schedule_id = ?";
 const ins_query = "INSERT INTO attendees (schedule_id, user_code, response_status_flg, response_time, del_flg, created_by, created_at, updated_by, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+const del_query = "DELETE FROM attendees WHERE schedule_id = ?";
 
 class Attendee {
   static getAttendeeByScheduleId(id, callback) {
@@ -44,9 +45,15 @@ class Attendee {
     });
   }
 
+  //Dynamic Delete
   static async deleteAttendees(req) {
     const values = [req.del_flg, req.updated_by, req.updated_at, req.id];
     db.query(del_upd_query, values);
+  }
+
+  //Delete Records before Update
+  static async deleteAttendeesByScheduleId(req) {
+    db.query(del_query, [req]);
   }
 }
 

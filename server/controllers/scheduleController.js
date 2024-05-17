@@ -1,3 +1,5 @@
+const attendeeService = require('../services/attendeeService');
+const scheduleReminderService = require('../services/scheduleReminderService');
 const scheduleService = require('../services/scheduleService');
 
 class ScheduleController {
@@ -31,11 +33,31 @@ class ScheduleController {
 
   static async saveSchedule(req, res) {
     try {
-      const userCode = req.cookies.userCode;
-      const groupCode = req.cookies.groupCode;
       const scheduleData = req.body;
-      const dbScheduleId = await scheduleService.saveSchedule(scheduleData, userCode,groupCode);
+      await scheduleService.saveSchedule(scheduleData);
       res.status(200).json({ statusCode: 200, message: 'スケジュールは正常に登録されました。' });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async getScheduleById(req, res) {
+    try {
+      const scheduleId = req.params.id;
+      const schedule = await scheduleService.getScheduleById(scheduleId);
+      const attendees = await attendeeService.getAttendeeByScheduleId(scheduleId);
+      const scheduleReminders = await scheduleReminderService.getScheduleReminderByScheduleId(scheduleId);
+      res.json({ 'schedule': schedule, 'attendees': attendees, 'scheduleReminders': scheduleReminders });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async updateSchedule(req, res) {
+    try {
+      const scheduleData = req.body;
+      await scheduleService.updateSchedule(scheduleData);
+      res.status(200).json({ statusCode: 200, message: 'スケジュールは正常に更新されました。' });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

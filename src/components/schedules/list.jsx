@@ -231,7 +231,7 @@ function ScheduleList() {
                                                         {schedule.user_code === userCode ? (
                                                             <>
                                                                 {!schedule.schedule_status_flg && (
-                                                                    <Link to={`/schedule/groups/edit/${schedule.id}`} className='btn btn-primary'>
+                                                                    <Link to={`/schedule/schedules/edit/${schedule.id}`} className='btn btn-primary'>
                                                                         編集
                                                                     </Link>
                                                                 )}

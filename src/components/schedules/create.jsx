@@ -10,6 +10,8 @@ import moment from 'moment';
 import cookies from 'js-cookie';
 
 const ScheduleCreate = () => {
+  const user_code = cookies.get('userCode');
+  const group_code = cookies.get('groupCode');
   const [users, setUsers] = useState([]);
   const [schedule_theme_color, setScheduleThemeColor] = useState('#FF4013');
 
@@ -30,6 +32,7 @@ const ScheduleCreate = () => {
   const handleScheduleStartDateTimeChange = (date) => {
     setScheduleStartDateTimeChange(date);
     repeatTypeOfMonthOptionSet(date);
+    repeatDayOfWeekOptionSet(date);
 
     repeatUntilValueSet(date, repeat_type);
     setScheduleEndDateTimeChange(date.clone().add(1, 'hour'));
@@ -42,6 +45,12 @@ const ScheduleCreate = () => {
   const handleRepeatUntilDateTimeChange = (date) => {
     setRepeatUntilDateTimeChange(date);
   };
+  useEffect(() => {
+    setValues(prevValues => ({ ...prevValues, schedule_start_date_time: selectedScheduleStartDateTime }));
+  }, [selectedScheduleStartDateTime]);
+  useEffect(() => {
+    setValues(prevValues => ({ ...prevValues, schedule_end_date_time: selectedScheduleEndDateTime }));
+  }, [selectedScheduleEndDateTime]);
   useEffect(() => {
     setValues(prevValues => ({ ...prevValues, repeat_until: selectedRepeatUntilDateTime }));
   }, [selectedRepeatUntilDateTime]);
@@ -126,6 +135,7 @@ const ScheduleCreate = () => {
   const [divRepeatMonthDisplay, setDivRepeatMonthDisplay] = useState('none');
   const [divRepeatUntilDateTimeDisplay, setDivRepeatUntilDateTimeDisplay] = useState('none');
   const [repeatTypeOfMonthOptions, setRepeatTypeOfMonthOptions] = useState([]);
+  const [repeatDayOfWeek, setRepeatDayOfWeek] = useState('01');
   const onRepeatTypeChange = async (event) => {
     setRepeatType(event);
     setDivRepeatDayDisplay('none');
@@ -134,6 +144,7 @@ const ScheduleCreate = () => {
     if (event !== '01') {
       if (event === '03') {
         setDivRepeatDayDisplay('block');
+        repeatDayOfWeekOptionSet(selectedScheduleStartDateTime);
       } else if (event === '04') {
         setDivRepeatMonthDisplay('block');
         repeatTypeOfMonthOptionSet(selectedScheduleStartDateTime);
@@ -152,6 +163,10 @@ const ScheduleCreate = () => {
       }
       setRepeatUntilDateTimeChange(newDate);
     }
+  }
+  const repeatDayOfWeekOptionSet = (date) => {
+    let repeatDayOfWeek = parseInt(date.format('d')) + 1;
+    setRepeatDayOfWeek('0' + repeatDayOfWeek);
   }
   const repeatTypeOfMonthOptionSet = (date) => {
     const options = [];
@@ -180,8 +195,6 @@ const ScheduleCreate = () => {
     return dayName;
   }
 
-  const user_code = cookies.get('userCode');
-  const group_code = cookies.get('groupCode');
   const [allday_flg] = useState(false);
   const [event_flg] = useState("1");
   const [guest_permission_flg] = useState('0');
@@ -190,14 +203,12 @@ const ScheduleCreate = () => {
   const [repeat_day_of_week] = useState('01');
   const [repeat_type_of_month] = useState('01');
   const [schedule_display_flg] = useState('0');
-  const [schedule_start_date_time] = useState(moment());
-  const [schedule_end_date_time] = useState(moment().clone().add(1, 'hour'));
   const [values, setValues] = useState({
     user_code: user_code,
     group_code: group_code,
     schedule_title: '',
-    schedule_start_date_time: schedule_start_date_time,
-    schedule_end_date_time: schedule_end_date_time,
+    schedule_start_date_time: selectedScheduleStartDateTime,
+    schedule_end_date_time: selectedScheduleEndDateTime,
     allday_flg: allday_flg,
     repeat_type: repeat_type,
     repeat_until: selectedRepeatUntilDateTime,
@@ -222,6 +233,7 @@ const ScheduleCreate = () => {
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
+      console.log(values);
       saveSchedule(values).then(res => {
         navigate('/schedule/schedules');
       })
@@ -256,7 +268,7 @@ const ScheduleCreate = () => {
                       <div className="col-sm-6">
                         <label htmlFor="scheduleTitle"> スケジュールの開始日時 :</label>
                         <Datetime
-                          value={selectedScheduleStartDateTime}
+                          value={values.schedule_start_date_time}
                           dateFormat="YYYY-MM-DD"
                           timeFormat="HH:mm:ss"
                           onChange={(date) => {
@@ -269,7 +281,7 @@ const ScheduleCreate = () => {
                       <div className="col-sm-6">
                         <label htmlFor="scheduleTitle"> スケジュールの終了日時 :</label>
                         <Datetime
-                          value={selectedScheduleEndDateTime}
+                          value={values.schedule_end_date_time}
                           dateFormat="YYYY-MM-DD"
                           timeFormat="HH:mm:ss"
                           onChange={(date) => {
@@ -335,8 +347,10 @@ const ScheduleCreate = () => {
                           id="repeatDayOfWeek"
                           name="repeatDayOfWeek"
                           className="form-control"
+                          value={repeatDayOfWeek}
                           onChange={(e) => {
                             setValues({ ...values, repeat_day_of_week: e.target.value });
+                            setRepeatDayOfWeek(e.target.value);
                           }}
                         >
                           <option value="01">日曜日</option>
@@ -368,7 +382,7 @@ const ScheduleCreate = () => {
                       <div className="col-sm-4" style={{ display: divRepeatUntilDateTimeDisplay }}>
                         <label htmlFor="repeatUntilDateTimeString">繰り返す終了日付 :</label>
                         <Datetime
-                          value={selectedRepeatUntilDateTime}
+                          value={values.repeat_until}
                           dateFormat="YYYY-MM-DD"
                           timeFormat="HH:mm:ss"
                           onChange={(date) => {

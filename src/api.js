@@ -54,6 +54,27 @@ export const saveSchedule = async (scheduleData) => {
     }
 };
 
+export const getScheduleById = async (id) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/schedules/edit/${id}`);
+        return response.data;
+    } catch (error) {
+        throw new Error('Failed to fetch schedule details. Please try again later.');
+    }
+};
+
+export const updateSchedule = async (scheduleData) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/schedules/update`, scheduleData, {
+            withCredentials: true
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error updating schedule:', error);
+        throw new Error('Failed to update schedule. Please try again later.');
+    }
+};
+
 export const deleteScheduleOne = async (deleteValue) => {
     try {
         const response = await axios.put(`${API_BASE_URL}/schedules/deleteOne/${deleteValue}`, null, {

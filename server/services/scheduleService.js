@@ -1,8 +1,9 @@
+const moment = require('moment');
 const Schedule = require('../models/Schedule');
 const attendeeService = require('../services/attendeeService');
 const scheduleReminderService = require('../services/scheduleReminderService');
-const moment = require('moment');
-const differenceInDays = require('date-fns');
+const Attendee = require('../models/Attendee');
+const ScheduleReminder = require('../models/ScheduleReminder');
 
 class ScheduleService {
   static async getAllSchedules(req) {
@@ -82,32 +83,75 @@ class ScheduleService {
         }
       } else if (scheduleData.repeat_type === '03') {
         scheduleData.repeat_type_of_month = null;
-
-        console.log(scheduleData.repeat_day_of_week);
-        const targetDayOfWeek = this.getDayOfWeek(scheduleData.repeat_day_of_week);
-        console.log(targetDayOfWeek);
-        let diffDays = this.diffDay(dbStartDate, dbEndDate);
-        console.log(diffDays);
-        while (startDate.isBefore(dbRepeatUntilDate) || startDate.isSame(dbRepeatUntilDate)) {
-          if (this.getDayOfWeek(startDate) === targetDayOfWeek) {
-            console.log(this.getDayOfWeek(startDate));
-            console.log(dbStartDate);
-            console.log(dbEndDate);
-            dbStartDate = startDate;
-            console.log('dbStartDate.toDate().getDate()');
-            console.log(dbStartDate.toDate().getDate());
-            const temEndDate = new Date(dbEndDate);
-            temEndDate.setDate(dbStartDate.toDate().getDate() + (diffDays-1));
-            dbEndDate = moment(temEndDate);
-            console.log('complete');
-            console.log(dbStartDate);
-            console.log(dbEndDate);
-
+        for (let dateTime = startDate; !dateTime.isAfter(dbRepeatUntilDate); dateTime.add(1, 'days')) {
+          let repeatDayOfWeek = parseInt(dateTime.format('d')) + 1;
+          if ('0' + repeatDayOfWeek === scheduleData.repeat_day_of_week) {
             scheduleData.schedule_start_date_time = dbStartDate.toDate();
             scheduleData.schedule_end_date_time = dbEndDate.toDate();
             await this.saveDbSchedule(scheduleData);
           }
-          startDate = moment(startDate).add(1, 'months');
+          dbStartDate = moment(dbStartDate).add(1, 'days');
+          dbEndDate = moment(dbEndDate).add(1, 'days');
+        }
+      } else if (scheduleData.repeat_type === '04') {
+        let dayOfMonth = dbStartDate.format('DD');
+        let diffInDays = dbEndDate.diff(dbStartDate, 'days');
+        let repeatDayOfWeek = parseInt(dbStartDate.format('d'));
+
+        if (scheduleData.repeat_type_of_month === '01') {
+          for (let dateTime = startDate; !dateTime.isAfter(dbRepeatUntilDate); dateTime.add(1, 'months')) {
+            if (dayOfMonth === dateTime.format('DD')) {
+              scheduleData.schedule_start_date_time = dbStartDate.toDate();
+              scheduleData.schedule_end_date_time = dbEndDate.toDate();
+              await this.saveDbSchedule(scheduleData);
+            }
+            dbStartDate = moment(dbStartDate).add(1, 'months');
+            dbEndDate = moment(dbEndDate).add(1, 'months');
+          }
+        } else if (scheduleData.repeat_type_of_month === '02') {
+          while (!dbStartDate.isAfter(dbRepeatUntilDate)) {
+            let firstDayOfMonth = dbStartDate.clone().date(1);
+            let firstOccurrence = firstDayOfMonth.day(repeatDayOfWeek);
+            if (firstOccurrence.date() > 7) {
+              firstOccurrence.add(7, 'days');
+            }
+            let fourthRepeatDay = firstOccurrence.clone().add(3, 'weeks');
+
+            if (!fourthRepeatDay.isAfter(dbRepeatUntilDate)) {
+              dbStartDate = fourthRepeatDay;
+              scheduleData.schedule_start_date_time = dbStartDate.toDate();
+              dbEndDate = fourthRepeatDay.clone()
+                .add(diffInDays, 'days')
+                .hour(dbEndDate.hour())
+                .minute(dbEndDate.minute())
+                .second(dbEndDate.second());
+              scheduleData.schedule_end_date_time = dbEndDate.toDate();
+              await this.saveDbSchedule(scheduleData);
+            }
+            dbStartDate = dbStartDate.add(1, 'months');
+            dbEndDate = dbEndDate.add(1, 'months');
+          }
+        } else if (scheduleData.repeat_type_of_month === '03') {
+          while (!dbStartDate.isAfter(dbRepeatUntilDate)) {
+            let lastDayOfMonth = dbStartDate.clone().endOf('month');
+            let lastRepeatDay = lastDayOfMonth.clone();
+            while (lastRepeatDay.day() !== repeatDayOfWeek) {
+              lastRepeatDay.subtract(1, 'day');
+            }
+            if (!lastRepeatDay.isAfter(dbRepeatUntilDate)) {
+              dbStartDate = lastRepeatDay;
+              scheduleData.schedule_start_date_time = dbStartDate.toDate();
+              dbEndDate = lastRepeatDay.clone()
+                .add(diffInDays, 'days')
+                .hour(dbEndDate.hour())
+                .minute(dbEndDate.minute())
+                .second(dbEndDate.second());
+              scheduleData.schedule_end_date_time = dbEndDate.toDate();
+              await this.saveDbSchedule(scheduleData);
+            }
+            dbStartDate = dbStartDate.add(1, 'months');
+            dbEndDate = dbEndDate.add(1, 'months');
+          }
         }
       } else if (scheduleData.repeat_type === '05') {
         scheduleData.repeat_day_of_week = null;
@@ -128,36 +172,6 @@ class ScheduleService {
     }
   }
 
-  static diffDay(startDateTime, endDateTime) {
-    const startDate = new Date(startDateTime);
-    const endDate = new Date(endDateTime);
-
-    const diffTime = endDate.getTime() - startDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  }
-
-  static getDayOfWeek(repeatDayOfWeek) {
-    let dayOfWeek = 7; // Default to Sunday (0)
-
-    // Mapping day names to numerical representations
-    const dayMappings = {
-      'MON': 1,
-      'TUE': 2,
-      'WED': 3,
-      'THU': 4,
-      'FRI': 5,
-      'SAT': 6,
-      'SUN': 7,
-    };
-
-    if (dayMappings.hasOwnProperty(repeatDayOfWeek)) {
-      dayOfWeek = dayMappings[repeatDayOfWeek];
-    }
-
-    return dayOfWeek;
-  }
-
   static async saveDbSchedule(scheduleData) {
     try {
       const scheduleId = await new Promise((resolve, reject) => {
@@ -165,19 +179,21 @@ class ScheduleService {
           if (err) {
             reject(err);
           } else {
-            if (!scheduleData.allday_flg && scheduleData.schedule_reminder.length > 0) {
-              for (const scheduleReminder of scheduleData.schedule_reminder) {
-                scheduleReminder.schedule_id = scheduleId.insertId;
-                scheduleReminder.del_flg = false;
-                scheduleReminder.created_by = scheduleData.created_by;
-                scheduleReminder.created_at = new Date();
-                scheduleReminder.updated_by = scheduleData.updated_by;
-                scheduleReminder.updated_at = new Date();
-                await scheduleReminderService.saveScheduleReminder(scheduleReminder);
+            if (Array.isArray(scheduleData.attendee)) {
+              if (!scheduleData.allday_flg && scheduleData.schedule_reminder.length > 0) {
+                for (const scheduleReminder of scheduleData.schedule_reminder) {
+                  scheduleReminder.schedule_id = scheduleId.insertId;
+                  scheduleReminder.del_flg = false;
+                  scheduleReminder.created_by = scheduleData.created_by;
+                  scheduleReminder.created_at = new Date();
+                  scheduleReminder.updated_by = scheduleData.updated_by;
+                  scheduleReminder.updated_at = new Date();
+                  await scheduleReminderService.saveScheduleReminder(scheduleReminder);
+                }
               }
             }
 
-            if (scheduleData.attendee.length > 0) {
+            if (Array.isArray(scheduleData.attendee) && scheduleData.attendee.length > 0) {
               for (const att of scheduleData.attendee) {
                 att.schedule_id = scheduleId.insertId;
                 att.response_time = new Date();
@@ -199,6 +215,42 @@ class ScheduleService {
       console.error('Error saving schedule:', error);
       throw error;
     }
+  }
+
+  static async updateSchedule(scheduleData) {
+    try {
+      const dbSchedules = await this.getScheduleByCode(scheduleData.schedule_code);
+      for (const schedule of dbSchedules) {
+        Attendee.deleteAttendeesByScheduleId(schedule.id);
+        ScheduleReminder.deleteScheduleRemindersByScheduleId(schedule.id);
+      }
+      Schedule.deleteScheduleByCode(scheduleData.schedule_code);
+
+      await this.saveSchedule(scheduleData);
+
+      return scheduleData.schedule_code;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getScheduleById(id) {
+    return new Promise((resolve, reject) => {
+      Schedule.getScheduleById(id, (err, schedule) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(schedule);
+        }
+        Schedule.getScheduleById(id, (err, schedule) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(schedule);
+          }
+        });
+      });
+    });
   }
 
   static async deleteScheduleOne(scheduleId, userCode) {

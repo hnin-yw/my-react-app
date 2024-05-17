@@ -3,6 +3,7 @@ const db = require('../db');
 const selectByScheduleIdQuery = "SELECT * FROM schedule_reminders WHERE del_flg = 0 AND schedule_id = ?";
 const del_upd_query = "UPDATE schedule_reminders SET del_flg = ?, updated_by = ?, updated_at = ? WHERE schedule_id = ?";
 const ins_query = "INSERT INTO schedule_reminders (schedule_id, schedule_reminder_time, schedule_reminder_type, noti_method_flg, del_flg, created_by, created_at, updated_by, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+const del_query = "DELETE FROM schedule_reminders WHERE schedule_id = ?";
 
 class ScheduleReminder {
   static getScheduleReminderByScheduleId(id, callback) {
@@ -35,6 +36,11 @@ class ScheduleReminder {
   static async deleteScheduleReminders(req) {
     const values = [req.del_flg, req.updated_by, req.updated_at, req.id];
     db.query(del_upd_query, values);
+  }
+
+  //Delete Records before Update
+  static async deleteScheduleRemindersByScheduleId(req) {
+    db.query(del_query, [req]);
   }
 }
 
