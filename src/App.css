@@ -162,6 +162,7 @@ ul {
 .cus_left-panel {
   border: 1px solid #000 !important;
   padding: 10px;
+  border-radius: 3px;
 }
 
 .cus_modal-footer {
@@ -274,4 +275,96 @@ label {
   background-image: none;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.error {
+  color: red !important;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pf_link,
+.list-group-item {
+  font-size: 14px !important;
+}
+
+.tbl-header-ft {
+  font-weight: bold;
+}
+
+table {
+  border: 1px rgb(190, 187, 187) !important;
+}
+
+th {
+  background-color: #cee2f5 !important;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1050;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  outline: 0;
+}
+
+.modal.show {
+  display: block;
+}
+
+.modal-dialog {
+  position: relative;
+  width: auto;
+  margin: 10px;
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0.3rem;
+  outline: 0;
+}
+
+.list-group {
+  padding-left: 0 !important;
+  margin-bottom: 20px !important;
+}
+
+.list-group-item {
+  position: relative;
+  display: block;
+  padding: 8px 8px !important;
+  margin-bottom: -1px;
+  background-color: #fff;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+}
+
+.close {
+  float: right;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+  color: #000;
+  text-shadow: 0 1px 0 #fff;
+  filter: alpha(opacity=20);
+  opacity: .2;
+}
+
+button.close {
+  padding: 0;
+  cursor: pointer;
+  background: 0 0;
+  border: 0;
+  appearance: none;
 }

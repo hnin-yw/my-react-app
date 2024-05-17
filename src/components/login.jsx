@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-//import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { login } from '../api';
+import Cookies from 'js-cookie';
 
 function LoginForm() {
   const [values, setValues] = useState({
@@ -8,16 +9,22 @@ function LoginForm() {
     password: ''
   });
   const [error, setError] = useState('');
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handelLoginSubmit = (event) => {
     event.preventDefault();
-
     try {
-      event.preventDefault();
       if (values.user_name && values.password) {
         login(values).then(res => {
-          //navigate('/schedule/schedules');
+          if (res && res.length > 0) {
+            Cookies.set('userId', res[0].id);
+            Cookies.set('userCode', res[0].user_code);
+            Cookies.set('groupCode', res[0].group_code);
+            Cookies.set('userName', res[0].user_first_name + '_' + res[0].user_last_name);
+            navigate('/schedule/schedules');
+          } else {
+            setError('ユーザ名とパスワードが間違っています。');
+          }
         })
       } else {
         setError('ユーザ名とパスワードを入力してください。');

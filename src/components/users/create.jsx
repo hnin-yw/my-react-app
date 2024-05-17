@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllGroups } from '../../api';
 import { Link, useNavigate } from 'react-router-dom';
-import { saveGroup } from '../../api';
+import { saveUser } from '../../api';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 
@@ -34,7 +34,7 @@ const UserCreate = () => {
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
-      saveGroup(values).then(res => {
+      saveUser(values).then(res => {
         navigate('/schedule/users');
       })
     } catch (error) {

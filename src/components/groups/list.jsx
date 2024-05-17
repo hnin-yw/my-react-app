@@ -35,11 +35,12 @@ function GroupList() {
         try {
             const confirmed = window.confirm('このグループを削除してもよろしいですか?');
             if (confirmed) {
-                deleteGroup(id).then(res => {
+                const res = await deleteGroup(id);
+                window.alert(res.message);
+                if (res.statusCode === 200) {
                     window.location.reload();
-                })
+                }
             }
-
         } catch (error) {
             console.error('Error deleting group:', error);
         }
@@ -60,7 +61,7 @@ function GroupList() {
                             <thead className="tbl-header-ft">
                                 <tr>
                                     <th><b>グループ名</b></th>
-                                    <th></th>
+                                    <th>アクション</th>
                                 </tr>
                             </thead>
                             <tbody className="tbl-body-ft">

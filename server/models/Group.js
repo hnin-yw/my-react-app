@@ -1,6 +1,6 @@
 const db = require('../db');
 
-const selectAllQuery = "SELECT * FROM user_groups WHERE del_flg = 0";
+const selectAllQuery = "SELECT * FROM user_groups WHERE del_flg = 0 ORDER BY group_code DESC";
 const selectByIdQuery = "SELECT * FROM user_groups WHERE del_flg = 0 AND id = ?";
 const gp_code_query = "SELECT * FROM user_groups ORDER BY group_code DESC LIMIT 1";
 const ins_query = "INSERT INTO user_groups (group_code, group_name, del_flg, created_by, created_at, updated_by, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)";

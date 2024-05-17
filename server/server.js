@@ -1,16 +1,18 @@
-// server.js
 const express = require('express');
-const cors = require('cors'); // Import the cors package
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
+app.use(cors({
+  origin: 'http://localhost:3000', // Replace with your client URL
+  credentials: true // Enable credentials (cookies)
+}));
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-//to resolve not allowed by Access-Control-Allow-Origin
-app.use(cors()); // Use the cors middleware
 
 // Routes
 const userRoutes = require('./routes/userRoute');
