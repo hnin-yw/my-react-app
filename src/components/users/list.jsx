@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getAllUsers, deleteUser } from '../../api';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 import PaginationComponent from '../PaginationComponent';
 import cookies from 'js-cookie';
+import Message from '../Message';
 
 const UserList = () => {
     const userCode = cookies.get('userCode');
@@ -16,6 +17,8 @@ const UserList = () => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = users.slice(indexOfFirstItem, indexOfLastItem);
+    const location = useLocation();
+    const message = location.state?.message || '';
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
@@ -25,6 +28,10 @@ const UserList = () => {
             try {
                 const data = await getAllUsers();
                 setUsers(data);
+
+                if (location.state && location.state.message) {
+                    window.history.replaceState({}, '')
+                }
             } catch (error) {
                 console.error('Error fetching users:', error);
             }
@@ -32,18 +39,23 @@ const UserList = () => {
         fetchUsers();
     }, []);
 
-    const handleDelete = async (id) => {
+    const [deleteIdValue, setDeleteIdValue] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const handleOpenModal = (id) => {
+        setShowModal(true);
+        setDeleteIdValue(id);
+    };
+    const handleCloseModal = () => {
+        setShowModal(false);
+    };
+    const handleDelete = async () => {
         try {
-            const confirmed = window.confirm('このユーザを削除してもよろしいですか?');
-            if (confirmed) {
-                deleteUser(id).then(res => {
-                    window.alert(res.message);
-                    if (res.statusCode === 200) {
-                        window.location.reload();
-                    }
-                })
+            const res = await deleteUser(deleteIdValue);
+            window.alert(res.message);
+            setShowModal(false);
+            if (res.status === 200) {
+                window.location.reload();
             }
-
         } catch (error) {
             console.error('Error deleting group:', error);
         }
@@ -57,6 +69,7 @@ const UserList = () => {
                 <div className="col-sm-10 content_body">
                     <h2 className="text-center">ユーザ一覧</h2>
                     <div className="col-sm-12">
+                        {message !== '' && <Message isError={false} message={message} />}
                         <div className="up-btn-gp">
                             <Link to="/schedule/users/create" className='btn btn-primary'>ユーザを登録</Link>
                         </div>
@@ -98,13 +111,38 @@ const UserList = () => {
                                                     </button>
                                                 )}
                                                 <button
-                                                    type='button'
-                                                    onClick={() => user.user_code !== userCode && handleDelete(user.id)}
-                                                    className='mx-2 btn btn-danger'
-                                                    disabled={user.user_code === userCode}
-                                                >
-                                                    削除
-                                                </button>
+                                                    type="button"
+                                                    className="mx-2 btn btn-danger"
+                                                    onClick={() => user.user_code !== userCode && handleOpenModal(user.id)}
+                                                    disabled={user.user_code === userCode}>削除</button>
+                                                {/* Delete confirmation modal */}
+                                                {showModal && (
+                                                    <div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block' }}>
+                                                        <div className="modal-dialog" role="document">
+                                                            <div className="modal-content">
+                                                                <div className="modal-header">
+                                                                    <h5 className="modal-title">情報削除の確認</h5>
+                                                                    <button type="button" className="close" onClick={handleCloseModal}>
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div className="modal-body">
+                                                                    <p>ユーザの情報を削除してもよろしいですか?</p>
+                                                                </div>
+                                                                <div className="modal-footer">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-danger"
+                                                                        onClick={() => { handleDelete(); }}
+                                                                    >
+                                                                        削除
+                                                                    </button>
+                                                                    <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>キャンセル</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
 
 
                                             </td>
@@ -112,7 +150,7 @@ const UserList = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="2">ユーザはありません。</td>
+                                        <td colSpan="6">ユーザはありません。</td>
                                     </tr>
                                 )}
                             </tbody>

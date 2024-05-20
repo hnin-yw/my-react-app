@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { getAllSchedules, deleteScheduleOne, deleteScheduleAll, downloadSchedule } from '../../api';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 import PaginationComponent from '../PaginationComponent';
@@ -8,11 +8,14 @@ import { FiCircle, FiDownload } from 'react-icons/fi';
 import cookies from 'js-cookie';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
+import Message from '../Message';
 
 function ScheduleList() {
     const userCode = cookies.get('userCode');
     const groupCode = cookies.get('groupCode');
     const [schedules, setSchedules] = useState([]);
+    const location = useLocation();
+    const message = location.state?.message || '';
 
     const [values] = useState({
         user_code: userCode,
@@ -48,6 +51,10 @@ function ScheduleList() {
             try {
                 const data = await getAllSchedules(values);
                 setSchedules(data);
+
+                if (location.state && location.state.message) {
+                    window.history.replaceState({}, '')
+                }
             } catch (error) {
                 console.error('Error fetching Schedules:', error);
             }
@@ -57,7 +64,11 @@ function ScheduleList() {
 
     const [showModal, setShowModal] = useState(false);
     const [isdeleteAll, setDeleteOption] = useState(true);
-    const handleOpenModal = (id) => {
+    const [deleteIdValue, setDeleteIdValue] = useState('');
+    const [deleteCodeValue, setDeleteCodeValue] = useState('');
+    const handleOpenModal = (id, code) => {
+        setDeleteCodeValue(code);
+        setDeleteIdValue(id);
         setShowModal(true);
     };
     const handleCloseModal = () => {
@@ -71,15 +82,15 @@ function ScheduleList() {
             setDeleteOption(true);
         }
     };
-    const handleDelete = async (deleteValue) => {
+    const handleDelete = async () => {
         try {
             if (isdeleteAll) {
-                deleteScheduleAll(deleteValue).then(res => {
+                deleteScheduleAll(deleteCodeValue).then(res => {
                     window.alert(res.message);
                     window.location.reload();
                 })
             } else {
-                deleteScheduleOne(deleteValue).then(res => {
+                deleteScheduleOne(deleteIdValue).then(res => {
                     window.alert(res.message);
                     window.location.reload();
                 })
@@ -90,13 +101,18 @@ function ScheduleList() {
     };
 
     //Download CSV
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
+    const handleOpenDownloadModal = () => {
+        setShowDownloadModal(true);
+    };
+    const handleCloseDownloadModal = () => {
+        setShowDownloadModal(false);
+    };
     const handleDownloadSchedule = async () => {
         try {
-            const confirmed = window.confirm('スケジュールCSVをダウンロードしてもよろしいですか?');
-            if (confirmed) {
-                const downloadSchedules = await downloadSchedule(selectedScheduleIds);
-                generateExcel(downloadSchedules);
-            }
+            const downloadSchedules = await downloadSchedule(selectedScheduleIds);
+            generateExcel(downloadSchedules);
+            setShowDownloadModal(false);
         } catch (error) {
             console.error('Error downloading data:', error);
         } finally {
@@ -158,6 +174,7 @@ function ScheduleList() {
                 <div className="col-sm-10 content_body">
                     <h2 className="text-center">スケジュール一覧</h2>
                     <div className="col-sm-12">
+                        {message !== '' && <Message isError={false} message={message} />}
                         <div className="up-btn-gp">
                             <Link to="/schedule/schedules/create" className='btn btn-primary'>スケジュールを登録</Link>
                         </div><table className="table table-bordered" style={{ marginTop: '10px' }}>
@@ -235,7 +252,7 @@ function ScheduleList() {
                                                                         編集
                                                                     </Link>
                                                                 )}
-                                                                <button type="button" className="mx-2 btn btn-danger" onClick={() => handleOpenModal(schedule.id)}>削除</button>
+                                                                <button type="button" className="mx-2 btn btn-danger" onClick={() => handleOpenModal(schedule.id, schedule.schedule_code)}>削除</button>
                                                                 {/* Delete confirmation modal */}
                                                                 {showModal && (
                                                                     <div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block' }}>
@@ -281,11 +298,7 @@ function ScheduleList() {
                                                                                         type="button"
                                                                                         className="btn btn-danger"
                                                                                         onClick={() => {
-                                                                                            if (!isdeleteAll) {
-                                                                                                handleDelete(schedule.id);
-                                                                                            } else {
-                                                                                                handleDelete(schedule.schedule_code);
-                                                                                            }
+                                                                                            handleDelete();
                                                                                         }}
                                                                                     >
                                                                                         削除
@@ -320,8 +333,13 @@ function ScheduleList() {
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td style={{ backgroundColor: bgColor }}>{schedule.schedule_title}</td>
-                                                    <td style={{ backgroundColor: bgColor }}>{schedule.schedule_description}</td>
+                                                    <td style={{ backgroundColor: bgColor }}>
+                                                        {schedule.schedule_title.length > 10 ? schedule.schedule_title.slice(0, 10) + '...' : schedule.schedule_title}
+                                                    </td>
+                                                    <td style={{ backgroundColor: bgColor }}>
+                                                        {schedule.schedule_description.length > 60 ? schedule.schedule_description.slice(0, 60) + '...' : schedule.schedule_description}
+                                                    </td>
+
                                                     <td style={{ backgroundColor: bgColor }}>{formatDate(schedule.repeat_until)}</td>
                                                 </tr>
                                             </React.Fragment>
@@ -349,10 +367,37 @@ function ScheduleList() {
                             data-toggle="modal"
                             data-target="#downloadConfirmModel"
                             disabled={!selectedScheduleIds.length || isDownloadDisabled}
-                            onClick={handleDownloadSchedule}
+                            //onClick={handleDownloadSchedule}
+                            onClick={() => handleOpenDownloadModal()}
                         >
                             <FiDownload /> ダウンロード
                         </button>
+                        {/* CSV Download confirmation modal */}
+                        {showDownloadModal && (
+                            <div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block' }}>
+                                <div className="modal-dialog" role="document">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">情報ダウンロードの確認</h5>
+                                            <button type="button" className="close" onClick={handleCloseDownloadModal}>
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div className="modal-body">
+                                            <p>スケジュールCSVをダウンロードしてもよろしいですか?</p>
+                                        </div>
+                                        <div className="modal-footer">
+                                            <button
+                                                type="button"
+                                                className="btn btn-success"
+                                                onClick={() => { handleDownloadSchedule(); }}
+                                            >OK</button>
+                                            <button type="button" className="btn btn-secondary" onClick={handleCloseDownloadModal}>キャンセル</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

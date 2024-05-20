@@ -1,12 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-const Message = ({ isError, message }) => {
+function Message({ isError, message }) {
+  const [show, setShow] = useState(true);
+  
+  // Reset show state when message prop changes
+  useEffect(() => {
+    setShow(true);
+  }, [message]);
+
+  // Hide message when show state changes
+  // useEffect(() => {
+  //   if (!show) {
+  //     setShow(true); // Reset show state for next render
+  //   }
+  // }, [show]);
+
+  const handleClose = () => {
+    setShow(false);
+  };
+
   return (
-    <div className={isError ? "alert alert-danger alert-dismissible" : "alert alert-success alert-dismissible"}>
-      <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
-      <strong>{message}</strong>
-    </div>
+    <>
+      {show && (
+        <div className={isError ? "alert alert-danger alert-dismissible" : "alert alert-success alert-dismissible"}>
+          <button type="button" className="close" onClick={handleClose} aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <strong>{message}</strong>
+        </div>
+      )}
+    </>
   );
-};
+}
 
 export default Message;

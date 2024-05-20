@@ -296,7 +296,6 @@ class ScheduleService {
     }
   }
 
-
   static async getScheduleByCode(schedule_code) {
     return new Promise((resolve, reject) => {
       Schedule.getScheduleByCode(schedule_code, (err, schedules) => {

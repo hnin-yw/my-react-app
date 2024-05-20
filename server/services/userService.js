@@ -49,30 +49,40 @@ class UserService {
     });
   }
 
+  static async getUserByUserName(user_name) {
+    return new Promise((resolve, reject) => {
+      User.getUserByUserName(user_name, (err, user) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(user);
+        }
+      });
+    });
+  }
+
   static async saveUser(userData, userCode) {
     try {
-      const user_code = await this.getUserCode();
-      userData.user_code = user_code;
-      userData.password = this.pwdEncodeSHA(userData.password);
-      userData.del_flg = false;
-      userData.created_by = userCode;
-      userData.created_at = new Date();
-      userData.updated_by = userCode;
-      userData.updated_at = new Date();
-      const userId = await new Promise((resolve, reject) => {
-        User.saveUser(userData, (err, userId) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(userId);
-          }
-        });
-      });
-      return userId;
+        const existingUser = await this.getUserByUserName(userData.user_name);
+        if (existingUser.length > 0) {
+            return false;
+        } else {
+            const user_code = await this.getUserCode();
+            userData.user_code = user_code;
+            userData.password = this.pwdEncodeSHA(userData.password);
+            userData.del_flg = false;
+            userData.created_by = userCode;
+            userData.created_at = new Date();
+            userData.updated_by = userCode;
+            userData.updated_at = new Date();
+            User.saveUser(userData);
+            return true;
+        }
     } catch (error) {
-      throw error;
+        console.error("Error occurred while saving user:", error);
+        throw error;
     }
-  }
+}
 
   static async updateUser(userData, userCode) {
     try {
