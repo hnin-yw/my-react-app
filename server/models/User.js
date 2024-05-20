@@ -2,6 +2,7 @@ const db = require('../db');
 
 const selectAllQuery = "SELECT u.*, g.group_name FROM users u JOIN user_groups g ON u.group_code = g.group_code WHERE u.del_flg = 0 ORDER BY u.user_code DESC";
 const selectByIdQuery = "SELECT u.*, g.group_name FROM users u JOIN user_groups g ON u.group_code = g.group_code WHERE u.del_flg = 0 AND u.id = ?";
+const selectByNameQuery = "SELECT * FROM users u WHERE u.del_flg = 0 AND u.user_name = ?";
 const loginQuery = "SELECT * FROM users WHERE user_name= ? AND password = ?";
 const selectUserByGroupCodeQuery = "SELECT * FROM users WHERE del_flg = 0 AND group_code = ?";
 
@@ -33,6 +34,16 @@ class User {
 
   static getUserById(id, callback) {
     db.query(selectByIdQuery, [id], (err, results) => {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, results);
+    });
+  }
+
+
+  static async getUserByUserName(user_name, callback) {
+    db.query(selectByNameQuery, [user_name], (err, results) => {
       if (err) {
         return callback(err);
       }
@@ -74,12 +85,7 @@ class User {
       req.tel_number,
       req.email,
       req.del_flg, req.created_by, req.created_at, req.updated_by, req.updated_at];
-    db.query(ins_query, values, (err, result) => {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, result);
-    });
+    db.query(ins_query, values);
   }
 
   static updateUser(req) {

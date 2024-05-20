@@ -368,3 +368,14 @@ button.close {
   border: 0;
   appearance: none;
 }
+
+.modal-header {
+  position: relative;
+}
+
+.modal-header .close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 15px;
+}

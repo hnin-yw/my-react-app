@@ -7,6 +7,7 @@ import Sidebar from '../Sidebar';
 
 const UserEdit = () => {
   const { id } = useParams();
+  const [errors, setErrors] = useState({});
   const [values, setValues] = useState({
     id: '',
     user_first_name: '',
@@ -39,11 +40,54 @@ const UserEdit = () => {
   }, [id]);
 
   const handleSubmit = async (event) => {
+    event.preventDefault();
     try {
-      event.preventDefault();
-      updateUser(values).then(res => {
-        navigate('/schedule/users');
-      })
+      const errors = {};
+      const numberPattern = /^[0-9-]+$/;
+      if (!values.user_first_name.trim()) {
+        errors.user_first_name = 'ユーザの名は必須です。';
+      } else if (values.user_first_name.length > 100) {
+        errors.user_first_name = 'ユーザの名は最大100文字までです。';
+      }
+      if (!values.user_last_name.trim()) {
+        errors.user_last_name = 'ユーザの姓は必須です。';
+      } else if (values.user_last_name.length > 100) {
+        errors.user_last_name = 'ユーザの姓は最大100文字までです。';
+      }
+      if (!values.post_code.trim()) {
+        errors.post_code = '郵便番号は必須です';
+      } else if (values.post_code.length > 20) {
+        errors.post_code = '郵便番号は最大20文字までです。';
+      } else if (!numberPattern.test(values.post_code)) {
+        errors.postal_code = '郵便番号が無効です。';
+      }
+      if (!values.address.trim()) {
+        errors.address = '住所は必須です。';
+      } else if (values.address.length > 250) {
+        errors.address = '住所は最大250文字までです。';
+      }
+      if (!values.tel_number.trim()) {
+        errors.tel_number = '電話番号は必須です';
+      } else if (values.tel_number.length > 20) {
+        errors.tel_number = '電話番号は最大20文字までです。';
+      } else if (!numberPattern.test(values.tel_number)) {
+        errors.tel_number = '電話番号が無効です。';
+      }
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!values.email.trim()) {
+        errors.email = 'メールは必須です';
+      } else if (values.email.length > 100) {
+        errors.email = 'メールは最大100文字までです。';
+      } else if (!emailPattern.test(values.email)) {
+        errors.email = 'メールが無効です。「例) @ を含める必要があります」';
+      }
+      setErrors(errors);
+
+      if (Object.keys(errors).length === 0) {
+        updateUser(values).then(res => {
+          navigate('/schedule/users', { state: { message: res.message } });
+        });
+      }
     } catch (error) {
       console.error('Error saving data:', error);
     }
@@ -105,6 +149,7 @@ const UserEdit = () => {
                     onChange={(e) => setValues({ ...values, user_first_name: e.target.value })}
                     placeholder="ユーザの名"
                   />
+                  {errors.user_first_name && <span className="error">{errors.user_first_name}</span>}
                 </div>
                 <div className="form-group">
                   <label htmlFor="userLastName"> ユーザの姓 :</label>
@@ -116,6 +161,7 @@ const UserEdit = () => {
                     onChange={(e) => setValues({ ...values, user_last_name: e.target.value })}
                     placeholder="ユーザの姓"
                   />
+                  {errors.user_last_name && <span className="error">{errors.user_last_name}</span>}
                 </div>
                 <div className="form-group row">
                   <div className="col-sm-4">
@@ -129,6 +175,7 @@ const UserEdit = () => {
                       value={values.post_code}
                       onChange={(e) => setValues({ ...values, post_code: e.target.value })}
                     />
+                    {errors.post_code && <span className="error">{errors.post_code}</span>}
                   </div>
                   <div className="col-sm-8">
                     <label htmlFor="address"> 住所 :</label>
@@ -140,6 +187,7 @@ const UserEdit = () => {
                       value={values.address}
                       onChange={(e) => setValues({ ...values, address: e.target.value })}
                     />
+                    {errors.address && <span className="error">{errors.address}</span>}
                   </div>
                 </div>
                 <div className="form-group">
@@ -153,6 +201,7 @@ const UserEdit = () => {
                     value={values.tel_number}
                     onChange={(e) => setValues({ ...values, tel_number: e.target.value })}
                   />
+                  {errors.tel_number && <span className="error">{errors.tel_number}</span>}
                 </div>
                 <div className="form-group">
                   <label htmlFor="email"> メール :</label>
@@ -165,6 +214,7 @@ const UserEdit = () => {
                     value={values.email}
                     onChange={(e) => setValues({ ...values, email: e.target.value })}
                   />
+                  {errors.email && <span className="error">{errors.email}</span>}
                 </div>
                 <div className="up-btn-gp col-sm-12">
                   <Link to="/schedule/users"><button type="button" className='btn btn-light'>キャンセル</button></Link>

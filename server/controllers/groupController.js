@@ -35,7 +35,7 @@ class GroupController {
       const userCode = req.cookies.userCode;
       const gpData = req.body;
       const dbGpId = await groupService.saveGroup(gpData, userCode);
-      res.status(200).json({ statusCode: 200, message: 'グループは正常に登録されました。' });
+      res.status(200).json({ status: 200, message: 'グループは正常に登録されました。' });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -46,7 +46,7 @@ class GroupController {
       const userCode = req.cookies.userCode;
       const gpData = req.body;
       await groupService.updateGroup(gpData, userCode);
-      res.status(200).json({ statusCode: 200, message: 'グループは正常に更新されました。' });
+      res.status(200).json({ status: 200, message: 'グループは正常に更新されました。' });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -58,9 +58,9 @@ class GroupController {
       const gpId = req.params.id;
       const isDel = await groupService.deleteGroup(gpId, userCode);
       if (isDel) {
-        res.status(200).json({ statusCode: 200, message: 'グループは正常に削除されました。' });
+        res.status(200).json({ status: 200, message: 'グループは正常に削除されました。' });
       } else {
-        res.status(201).json({ statusCode: 201, message: 'このグループは削除できません。' });
+        res.status(201).json({ status: 201, message: 'このグループは削除できません。' });
 
       }
     } catch (error) {

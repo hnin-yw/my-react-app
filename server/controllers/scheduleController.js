@@ -35,7 +35,7 @@ class ScheduleController {
     try {
       const scheduleData = req.body;
       await scheduleService.saveSchedule(scheduleData);
-      res.status(200).json({ statusCode: 200, message: 'スケジュールは正常に登録されました。' });
+      res.status(200).json({ status: 200, message: 'スケジュールは正常に登録されました。' });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -57,7 +57,7 @@ class ScheduleController {
     try {
       const scheduleData = req.body;
       await scheduleService.updateSchedule(scheduleData);
-      res.status(200).json({ statusCode: 200, message: 'スケジュールは正常に更新されました。' });
+      res.status(200).json({ status: 200, message: 'スケジュールは正常に更新されました。' });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -69,9 +69,9 @@ class ScheduleController {
       const scheduleId = req.params.deleteValue;
       const isDel = await scheduleService.deleteScheduleOne(scheduleId, userCode);
       if (isDel) {
-        res.status(200).json({ statusCode: 200, message: 'スケジュールは正常に削除されました。' });
+        res.status(200).json({ status: 200, message: 'スケジュールは正常に削除されました。' });
       } else {
-        res.status(201).json({ statusCode: 201, message: 'このスケジュールは削除できません。' });
+        res.status(201).json({ status: 201, message: 'このスケジュールは削除できません。' });
 
       }
     } catch (error) {
@@ -85,9 +85,9 @@ class ScheduleController {
       const scheduleCode = req.params.deleteValue;
       const isDel = await scheduleService.deleteScheduleAll(scheduleCode, userCode);
       if (isDel) {
-        res.status(200).json({ statusCode: 200, message: 'スケジュールは正常に削除されました。' });
+        res.status(200).json({ status: 200, message: 'スケジュールは正常に削除されました。' });
       } else {
-        res.status(201).json({ statusCode: 201, message: 'このスケジュールは削除できません。' });
+        res.status(201).json({ status: 201, message: 'このスケジュールは削除できません。' });
       }
     } catch (error) {
       res.status(500).json({ message: error.message });

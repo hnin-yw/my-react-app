@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getAllGroups, deleteGroup } from '../../api';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // Import useHistory from 'react-router'
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 import PaginationComponent from '../PaginationComponent';
+import Message from '../Message';
 
 function GroupList() {
     const [groups, setGroups] = useState([]);
@@ -15,31 +16,45 @@ function GroupList() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = groups.slice(indexOfFirstItem, indexOfLastItem);
 
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
-    };
+    const location = useLocation();
+    const message = location.state?.message || '';
 
     useEffect(() => {
         async function fetchGroups() {
             try {
                 const data = await getAllGroups();
                 setGroups(data);
+
+                if (location.state && location.state.message) {
+                    window.history.replaceState({}, '')
+                }
             } catch (error) {
                 console.error('Error fetching groups:', error);
             }
         }
         fetchGroups();
-    }, []);
+    }, [location]);
 
-    const handleDelete = async (id) => {
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
+    const [deleteIdValue, setDeleteIdValue] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const handleOpenModal = (id) => {
+        setShowModal(true);
+        setDeleteIdValue(id);
+    };
+    const handleCloseModal = () => {
+        setShowModal(false);
+    };
+    const handleDelete = async () => {
         try {
-            const confirmed = window.confirm('このグループを削除してもよろしいですか?');
-            if (confirmed) {
-                const res = await deleteGroup(id);
-                window.alert(res.message);
-                if (res.statusCode === 200) {
-                    window.location.reload();
-                }
+            const res = await deleteGroup(deleteIdValue);
+            window.alert(res.message);
+            setShowModal(false);
+            if (res.status === 200) {
+                window.location.reload();
             }
         } catch (error) {
             console.error('Error deleting group:', error);
@@ -54,6 +69,7 @@ function GroupList() {
                 <div className="col-sm-10 content_body">
                     <h2 className="text-center">グループ一覧</h2>
                     <div className="col-sm-12">
+                        {message !== '' && <Message isError={false} message={message} />}
                         <div className="up-btn-gp">
                             <Link to="/schedule/groups/create" className='btn btn-primary'>グループを登録</Link>
                         </div>
@@ -73,7 +89,35 @@ function GroupList() {
                                                 <Link to={`/schedule/groups/edit/${group.id}`} className='btn btn-primary'>
                                                     編集
                                                 </Link>
-                                                <button type='button' onClick={() => handleDelete(group.id)} className='mx-2 btn btn-danger'>削除</button>
+                                                <button type="button" className="mx-2 btn btn-danger" onClick={() => handleOpenModal(group.id)}>削除</button>
+                                                {/* Delete confirmation modal */}
+                                                {showModal && (
+                                                    <div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block' }}>
+                                                        <div className="modal-dialog" role="document">
+                                                            <div className="modal-content">
+                                                                <div className="modal-header">
+                                                                    <h5 className="modal-title">情報削除の確認</h5>
+                                                                    <button type="button" className="close" onClick={handleCloseModal}>
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div className="modal-body">
+                                                                    <p>グループの情報を削除してもよろしいですか?</p>
+                                                                </div>
+                                                                <div className="modal-footer">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-danger"
+                                                                        onClick={() => { handleDelete(); }}
+                                                                    >
+                                                                        削除
+                                                                    </button>
+                                                                    <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>キャンセル</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </td>
                                         </tr>
                                     ))
@@ -100,4 +144,3 @@ function GroupList() {
 }
 
 export default GroupList;
-

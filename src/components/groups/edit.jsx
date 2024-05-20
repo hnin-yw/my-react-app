@@ -32,14 +32,17 @@ const GroupEdit = () => {
     event.preventDefault();
     try {
       const errors = {};
+
       if (!values.group_name.trim()) {
         errors.group_name = 'グループ名は必須です。';
+      } else if (values.group_name.length > 100) {
+        errors.group_name = 'グループ名は最大100文字までです。';
       }
       setErrors(errors);
 
       if (Object.keys(errors).length === 0) {
         updateGroup(values).then(res => {
-          navigate('/schedule/groups');
+          navigate('/schedule/groups', { state: { message: res.message } });
         })
       }
     } catch (error) {

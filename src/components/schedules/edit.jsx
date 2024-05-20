@@ -12,11 +12,40 @@ import { BsFillExclamationTriangleFill } from "react-icons/bs";
 const ScheduleEdit = () => {
   const { id } = useParams();
   const user_code = cookies.get('userCode');
+  const [errors, setErrors] = useState({});
   const [users, setUsers] = useState([]);
   const [repeatType, setRepeatType] = useState('01');
   const [isEditChange, setIsEditChange] = useState(false);
   const [schedule_theme_color, setScheduleThemeColor] = useState('#FF4013');
   const navigate = useNavigate();
+  const [values, setValues] = useState({
+    id: '',
+    user_code: '',
+    group_code: '',
+    schedule_code: '',
+    schedule_title: '',
+    schedule_start_date_time: '',
+    schedule_end_date_time: '',
+    allday_flg: '',
+    repeat_type: '',
+    repeat_until: '',
+    repeat_day_of_week: '',
+    repeat_type_of_month: '',
+    schedule_display_flg: '',
+    location: '',
+    meet_link: '',
+    schedule_description: '',
+    schedule_theme_color: '',
+    event_flg: '',
+    other_visibility_flg: '',
+    schedule_status_flg: '',
+    guest_permission_flg: '',
+    schedule_reminder: [],
+    attendee: [],
+    del_flg: '',
+    created_by: '',
+    updated_by: '',
+  });
 
   function formatDate(dateString) {
     if (dateString != null) {
@@ -48,20 +77,21 @@ const ScheduleEdit = () => {
         const scheduleReminders = data['scheduleReminders'];
         const attendeeData = data['attendees'];
         if (scheduleData.length > 0) {
-          const formattedDate = formatDate(scheduleData[0].schedule_start_date_time);
-          setScheduleStartDateTimeChange(moment(formattedDate));
+          handleScheduleStartDateTimeChange(moment(formatDate(scheduleData[0].schedule_start_date_time)));
+          handleScheduleEndDateTimeChange(moment(formatDate(scheduleData[0].schedule_end_date_time)));
+          setScheduleStartDateTimeChange(moment(formatDate(scheduleData[0].schedule_start_date_time)));
           setScheduleEndDateTimeChange(moment(formatDate(scheduleData[0].schedule_end_date_time)));
-          setValues({
+          const newValues = {
             id: scheduleData[0].id,
             user_code: scheduleData[0].user_code,
             group_code: scheduleData[0].group_code,
             schedule_code: scheduleData[0].schedule_code,
             schedule_title: scheduleData[0].schedule_title,
-            schedule_start_date_time: formatDate(moment(scheduleData[0].schedule_start_date_time)),
-            schedule_end_date_time: formatDate(moment(scheduleData[0].schedule_end_date_time)),
+            schedule_start_date_time: moment(formatDate(scheduleData[0].schedule_start_date_time)),
+            schedule_end_date_time: moment(formatDate(scheduleData[0].schedule_end_date_time)),
             allday_flg: scheduleData[0].allday_flg,
             repeat_type: scheduleData[0].repeat_type,
-            repeat_until: formatDate(moment(scheduleData[0].repeat_until)),
+            repeat_until: moment(formatDate(scheduleData[0].repeat_until)),
             repeat_day_of_week: scheduleData[0].repeat_day_of_week,
             repeat_type_of_month: scheduleData[0].repeat_type_of_month,
             schedule_display_flg: scheduleData[0].schedule_display_flg,
@@ -76,7 +106,9 @@ const ScheduleEdit = () => {
             del_flg: scheduleData[0].del_flg,
             created_by: scheduleData[0].created_by,
             updated_by: user_code
-          });
+          };
+          setValues(newValues);
+
           setGuestPermissionFlgCheck(scheduleData[0].guest_permission_flg);
           if (!scheduleData[0].allday_flg && scheduleReminders.length > 0) {
             scheduleReminders.forEach((scheduleReminder, index) => {
@@ -110,31 +142,36 @@ const ScheduleEdit = () => {
     fetchSchedule();
   }, [id, user_code]);
 
-
-  const [selectedScheduleStartDateTime, setScheduleStartDateTimeChange] = useState(moment());
+  const [selectedScheduleStartDateTime, setScheduleStartDateTimeChange] = useState('');
   const handleScheduleStartDateTimeChange = (date) => {
-    setScheduleStartDateTimeChange(date);
-    repeatTypeOfMonthOptionSet(date);
-    repeatDayOfWeekOptionSet(date);
+    if (date && typeof date.isValid === 'function' && date.isValid()) {
+      setScheduleStartDateTimeChange(date);
+      repeatTypeOfMonthOptionSet(date);
+      repeatDayOfWeekOptionSet(date);
 
-    repeatUntilValueSet(date, repeatType);
-    setIsEditChange(true);
-    setScheduleEndDateTimeChange(date.clone().add(1, 'hour'));
+      repeatUntilValueSet(date, repeatType);
+      setIsEditChange(true);
+      setScheduleEndDateTimeChange(date.clone().add(1, 'hour'));
+    }
   };
   useEffect(() => {
     setValues(prevValues => ({ ...prevValues, schedule_start_date_time: selectedScheduleStartDateTime }));
   }, [selectedScheduleStartDateTime]);
-  const [selectedScheduleEndDateTime, setScheduleEndDateTimeChange] = useState(moment().clone().add(1, 'hour'));
+  const [selectedScheduleEndDateTime, setScheduleEndDateTimeChange] = useState('');
   const handleScheduleEndDateTimeChange = (date) => {
-    setScheduleEndDateTimeChange(date);
+    if (date && typeof date.isValid === 'function' && date.isValid()) {
+      setScheduleEndDateTimeChange(date);
+    }
   };
   useEffect(() => {
     setValues(prevValues => ({ ...prevValues, schedule_end_date_time: selectedScheduleEndDateTime }));
   }, [selectedScheduleEndDateTime]);
-  const [selectedRepeatUntilDateTime, setRepeatUntilDateTimeChange] = useState();
+  const [selectedRepeatUntilDateTime, setRepeatUntilDateTimeChange] = useState('');
   const handleRepeatUntilDateTimeChange = (date) => {
-    setRepeatUntilDateTimeChange(date);
-    setIsEditChange(true);
+    if (date && typeof date.isValid === 'function' && date.isValid()) {
+      setRepeatUntilDateTimeChange(date);
+      setIsEditChange(true);
+    }
   };
   useEffect(() => {
     setValues(prevValues => ({ ...prevValues, repeat_until: selectedRepeatUntilDateTime }));
@@ -241,31 +278,36 @@ const ScheduleEdit = () => {
     }
   };
   const repeatUntilValueSet = (date, type) => {
-    if (type !== '01') {
-      let newDate = date.clone().add(1, 'months');
-      if (type === '04') {
-        newDate = date.clone().add(3, 'months');
-      } else if (type === '05') {
-        newDate = date.clone().add(3, 'years');
-      }
-      if (isEditChange) {
-        setRepeatUntilDateTimeChange(newDate);
+    if (date && typeof date.isValid === 'function' && date.isValid()) {
+      if (type !== '01') {
+        let newDate = date.clone().add(1, 'months');
+        if (type === '04') {
+          newDate = date.clone().add(3, 'months');
+        } else if (type === '05') {
+          newDate = date.clone().add(3, 'years');
+        }
+        if (isEditChange) {
+          setRepeatUntilDateTimeChange(newDate);
+        }
       }
     }
   }
   const repeatDayOfWeekOptionSet = (date) => {
-    let repeatDayOfWeek = parseInt(date.format('d')) + 1;
-    setRepeatDayOfWeek('0' + repeatDayOfWeek);
+    if (date && typeof date.isValid === 'function' && date.isValid()) {
+      let repeatDayOfWeek = parseInt(date.format('d')) + 1;
+      setRepeatDayOfWeek('0' + repeatDayOfWeek);
+    }
   }
   const repeatTypeOfMonthOptionSet = (date) => {
-    const options = [];
-    console.log(date.format('DD'));
-    const nthDayOfMonth = date.format('DD');
-    options.push({ value: '01', text: `毎月${nthDayOfMonth}日` });
-    const nthAnyDayOfMonth = date.format('d');
-    options.push({ value: '02', text: `毎月第4の${getDayName(nthAnyDayOfMonth)}` });
-    options.push({ value: '03', text: `毎月最終の${getDayName(nthAnyDayOfMonth)}` });
-    setRepeatTypeOfMonthOptions(options);
+    if (date && typeof date.isValid === 'function' && date.isValid()) {
+      const options = [];
+      const nthDayOfMonth = date.format('DD');
+      options.push({ value: '01', text: `毎月${nthDayOfMonth}日` });
+      const nthAnyDayOfMonth = date.format('d');
+      options.push({ value: '02', text: `毎月第4${getDayName(nthAnyDayOfMonth)}` });
+      options.push({ value: '03', text: `毎月最終の${getDayName(nthAnyDayOfMonth)}` });
+      setRepeatTypeOfMonthOptions(options);
+    }
   }
   const getDayName = (type) => {
     let dayName = "日曜日";
@@ -291,41 +333,72 @@ const ScheduleEdit = () => {
   useEffect(() => {
     setValues(prevValues => ({ ...prevValues, attendee: attendees }));
   }, [attendees]);
-  const [values, setValues] = useState({
-    id: '',
-    user_code: '',
-    group_code: '',
-    schedule_code: '',
-    schedule_title: '',
-    schedule_start_date_time: '',
-    schedule_end_date_time: '',
-    allday_flg: '',
-    repeat_type: '',
-    repeat_until: '',
-    repeat_day_of_week: '',
-    repeat_type_of_month: '',
-    schedule_display_flg: '',
-    location: '',
-    meet_link: '',
-    schedule_description: '',
-    schedule_theme_color: '',
-    event_flg: '',
-    other_visibility_flg: '',
-    schedule_status_flg: '',
-    guest_permission_flg: '',
-    schedule_reminder: [],
-    attendee: [],
-    del_flg: '',
-    created_by: '',
-    updated_by: '',
-  });
 
   const handleSubmit = async (event) => {
+    event.preventDefault();
     try {
-      event.preventDefault();
-      updateSchedule(values).then(res => {
-        navigate('/schedule/schedules');
-      })
+      const errors = {};
+      if (!values.schedule_title.trim()) {
+        errors.schedule_title = 'スケジュールタイトルは必須です。';
+      } else if (values.schedule_title.length > 100) {
+        errors.schedule_title = 'スケジュールタイトルは最大100文字までです。';
+      }
+
+      if (!values.schedule_start_date_time || !String(values.schedule_start_date_time).trim()) {
+        errors.schedule_start_date_time = 'スケジュールの開始日時は必須です。';
+      }
+      if (!values.schedule_end_date_time || !String(values.schedule_end_date_time).trim()) {
+        errors.schedule_end_date_time = 'スケジュールの終了日時は必須です。';
+      }
+      if (String(values.schedule_start_date_time).trim() && String(values.schedule_end_date_time).trim()) {
+        const startDate = new Date(values.schedule_start_date_time);
+        const endDate = new Date(values.schedule_end_date_time);
+        if (isNaN(startDate.getTime())) {
+          errors.schedule_start_date_time = '開始日時は有効な日付でなければなりません。';
+        }
+        if (isNaN(endDate.getTime())) {
+          errors.schedule_end_date_time = '終了日時は有効な日付でなければなりません。';
+        }
+        if (!errors.schedule_start_date_time && !errors.schedule_end_date_time && endDate < startDate) {
+          errors.schedule_end_date_time = '終了日時は開始日時より後でなければなりません。';
+        }
+      }
+      if (values.repeat_type !== '01') {
+        if (!values.repeat_until || !String(values.repeat_until).trim()) {
+          errors.repeat_until = '繰り返す終了日付は必須です。';
+        }
+        if (String(values.schedule_end_date_time).trim() && String(values.repeat_until).trim()) {
+          const endDate = new Date(values.schedule_end_date_time);
+          const repeatUntil = new Date(values.repeat_until);
+          if (isNaN(endDate.getTime())) {
+            errors.schedule_end_date_time = '終了日時は有効な日付でなければなりません。';
+          }
+          if (isNaN(repeatUntil.getTime())) {
+            errors.repeat_until = '繰り返す終了日付は有効な日付でなければなりません。';
+          }
+          if (!errors.schedule_end_date_time && !errors.repeat_until && repeatUntil < endDate) {
+            errors.repeat_until = '繰り返す終了日はスケジュールの終了日時より後でなければなりません。';
+          }
+
+        }
+      }
+
+      if (values.location.length > 100) {
+        errors.location = 'ロケーションは最大100文字までです。';
+      }
+      if (values.meet_link.length > 100) {
+        errors.meet_link = 'ミーティングのリンクは最大100文字までです。';
+      }
+      if (values.schedule_description.length > 250) {
+        errors.schedule_description = 'スケジュールの説明は最大250文字までです。';
+      }
+      setErrors(errors);
+
+      if (Object.keys(errors).length === 0) {
+        updateSchedule(values).then(res => {
+          navigate('/schedule/schedules', { state: { message: res.message } });
+        });
+      }
     } catch (error) {
       console.error('Error saving data:', error);
     }
@@ -359,6 +432,7 @@ const ScheduleEdit = () => {
                         onChange={(e) => setValues({ ...values, schedule_title: e.target.value })}
                         placeholder="スケジュールタイトル"
                       />
+                      {errors.schedule_title && <span className="error">{errors.schedule_title}</span>}
                     </div>
                     <div className="form-group row">
                       <div className="col-sm-6">
@@ -374,6 +448,7 @@ const ScheduleEdit = () => {
                           }}
                           inputProps={{ placeholder: 'スケジュールの開始日時' }}
                         />
+                        {errors.schedule_start_date_time && <span className="error">{errors.schedule_start_date_time}</span>}
                       </div>
                       <div className="col-sm-6">
                         <label htmlFor="selectedScheduleEndDateTime"> スケジュールの終了日時 :</label>
@@ -388,6 +463,7 @@ const ScheduleEdit = () => {
                           }}
                           inputProps={{ placeholder: 'スケジュールの終了日時' }}
                         />
+                        {errors.schedule_end_date_time && <span className="error">{errors.schedule_end_date_time}</span>}
                       </div>
                     </div>
 
@@ -496,15 +572,7 @@ const ScheduleEdit = () => {
                           }}
                           inputProps={{ placeholder: '繰り返す終了日付' }}
                         />
-                        <span id="repeatUntilDateTimeStringError" style={{ color: 'red', display: 'none' }}>
-                          繰り返す終了日付は必須です。
-                        </span>
-                      </div>
-
-                      <div className="col-sm-12" style={{ marginTop: '5px' }}>
-                        <span style={{ color: 'red', display: 'none' }} id="repeatUntilError">
-                          スケジュールの終了日時は、繰り返す終了日時よりも前の日時にする必要があります。
-                        </span>
+                        {errors.repeat_until && <span className="error">{errors.repeat_until}</span>}
                       </div>
                     </div>
                   </div>
@@ -559,7 +627,7 @@ const ScheduleEdit = () => {
                     value={values.meet_link}
                     onChange={(e) => setValues({ ...values, meet_link: e.target.value })}
                   />
-                  <span><span style={{ color: 'red' }} /></span>
+                  {errors.meet_link && <span className="error">{errors.meet_link}</span>}
                 </div>
                 <div className="form-group col-sm-12">
                   <label htmlFor="location"> ロケーション :</label>
@@ -572,7 +640,7 @@ const ScheduleEdit = () => {
                     value={values.location}
                     onChange={(e) => setValues({ ...values, location: e.target.value })}
                   />
-                  <span><span style={{ color: 'red' }} /></span>
+                  {errors.location && <span className="error">{errors.location}</span>}
                 </div>
 
                 <div className="form-group" id="divReminder" style={{ display: divReminderDisplay }}>
@@ -629,7 +697,7 @@ const ScheduleEdit = () => {
                     value={values.schedule_description}
                     onChange={(e) => setValues({ ...values, schedule_description: e.target.value })}
                   ></textarea>
-                  <span><span style={{ color: 'red' }} /></span>
+                  {errors.schedule_description && <span className="error">{errors.schedule_description}</span>}
                 </div>
 
                 <div className="form-group row">
@@ -680,7 +748,7 @@ const ScheduleEdit = () => {
 
                 <div className="up-btn-gp col-sm-12">
                   <Link to="/schedule/schedules"><button type="button" className='btn btn-light'>キャンセル</button></Link>
-                  <button type="submit" className="btn btn-primary">登録</button>
+                  <button type="submit" className="btn btn-primary">編集</button>
                 </div>
               </form>
             </div>

@@ -43,8 +43,12 @@ class UserController {
     try {
       const userCode = req.cookies.userCode;
       const userData = req.body;
-      const dbUserId = await userService.saveUser(userData, userCode);
-      res.status(200).json({ statusCode: 200, message: 'ユーザは正常に登録されました。' });
+      const isSave = await userService.saveUser(userData, userCode);
+      if (isSave) {
+        res.status(200).json({ status: 200, message: 'ユーザは正常に登録されました。' });
+      } else {
+        res.status(201).json({ status: 201, message: 'ユーザ情報は登録できません。同じ「ユーザー名・ログイン名 」のユーザ情報が存在しています。' });
+      }
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -55,7 +59,7 @@ class UserController {
       const userCode = req.cookies.userCode;
       const userData = req.body;
       await userService.updateUser(userData, userCode);
-      res.status(200).json({ statusCode: 200, message: 'ユーザは正常に更新されました。' });
+      res.status(200).json({ status: 200, message: 'ユーザは正常に更新されました。' });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -67,9 +71,9 @@ class UserController {
       const userId = req.params.id;;
       const isDel = await userService.deleteUser(userId, userCode);
       if (isDel) {
-        res.status(200).json({ statusCode: 200, message: 'ユーザは正常に削除されました。' });
+        res.status(200).json({ status: 200, message: 'ユーザは正常に削除されました。' });
       } else {
-        res.status(201).json({ statusCode: 201, message: 'このユーザは削除できません。' });
+        res.status(201).json({ status: 201, message: 'このユーザは削除できません。' });
 
       }
     } catch (error) {
